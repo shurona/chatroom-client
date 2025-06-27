@@ -1,6 +1,6 @@
 'use server';
 
-import { SignUpResponse } from '@/app/api/auth.types';
+import { SignUpResponse } from '@/app/types/auth';
 import { getTokenUser } from './jwt.utils';
 
 export async function signUp(formData: FormData) {
@@ -108,7 +108,6 @@ export async function login(formData: FormData) {
 // 로그아웃 처리
 export async function logoutFromServer(token: string) {
 
-  console.log("로그아웃 요청", token);
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/logout`, {
       method: 'POST',
