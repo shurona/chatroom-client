@@ -1,3 +1,5 @@
+'use server';
+
 import { Friend } from '@/app/types/friend';
 
 export async function fetchFriendsFromServer(token: string): Promise<Friend[]> {
