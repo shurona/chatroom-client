@@ -11,7 +11,6 @@ export default withAuth(
       authorized: ({ token, req }) => {
         // accessToken이 있으면 접근 허용
         if (!!token?.accessToken) {
-          console.log("token", token);
           return true;
         }
         
