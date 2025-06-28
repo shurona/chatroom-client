@@ -15,7 +15,6 @@ const LoginPage = () => {
 
   const callbackUrl = searchParams.get('callbackUrl') || '/chat/friends';
 
-
   // 이미 로그인된 경우 리다이렉트
   useEffect(() => {
     const checkSession = async () => {

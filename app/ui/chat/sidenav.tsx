@@ -1,7 +1,9 @@
 'use client'; // This directive marks the component as a Client Component in Next.js App Router
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {LogoutButton} from '@/app/ui/logoutButton'; // Importing the LogOutButton component
+import { useSession } from 'next-auth/react';
+import { findUserById } from '@/app/lib/user.action';
 
 // SideNav Component - Now defined within the same file for self-containment
 // In a real Next.js app, this would typically be in its own file (e.g., app/ui/SideNav.tsx)
@@ -10,12 +12,24 @@ const SideNav = () => {
   // In a real Next.js app, this might be driven by the current URL path
   const [activeSection, setActiveSection] = useState('chats'); // Default active section
 
+  const { data: session } = useSession();
+  const [loginId, setLoginId] = useState(null);
+
   // For demonstration, using alert. In a real app, you'd use router.push()
   const handleNavigation = (section: any) => {
     setActiveSection(section);
     // Example: router.push(`/${section}`);
     alert(`'${section}' 섹션으로 이동합니다.`);
   };
+
+  // 페이지 접근 시 세션에서 findUserById 함수를 호출하여 사용자 정보를 가져옵니다.
+  useEffect(() => {
+    findUserById(session?.accessToken).then((user) => {
+      if (user.success) {
+        setLoginId(user.data.loginId);
+      }
+    });
+  }, []);
 
   return (
     // Sidebar container: full height, dark indigo background, padding, shadow, rounded right corners
@@ -76,7 +90,7 @@ const SideNav = () => {
 
       {/* User Info / Logout Button at the bottom of the sidebar */}
       <div className="mt-auto pt-6 border-t border-indigo-700 text-center">
-        <p className="text-sm text-indigo-200">사용자: user123</p>
+        <p className="text-sm text-indigo-200">사용자: {loginId || '게스트'}</p>
           <LogoutButton />
       </div>
     </nav>
