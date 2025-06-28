@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSession, signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { login } from '../lib/auth.action';
 
 // Login screen component
@@ -11,13 +11,14 @@ const LoginPage = () => {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: session, status } = useSession();
 
   const callbackUrl = searchParams.get('callbackUrl') || '/chat/friends';
+
 
   // 이미 로그인된 경우 리다이렉트
   useEffect(() => {
     const checkSession = async () => {
-      const session = await getSession();
       if (session?.accessToken) {
         router.push(callbackUrl);
       }

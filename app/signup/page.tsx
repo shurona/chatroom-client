@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { signUp } from '@/app/lib/auth.action';
 import { useRouter } from 'next/navigation';
-import { getSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 
 // Sign-up screen component
 const SignUpPage = () => {
