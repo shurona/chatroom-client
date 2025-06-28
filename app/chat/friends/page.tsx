@@ -5,7 +5,7 @@ import { Friend } from '@/app/types/friend';
 import { useRouter } from 'next/navigation';
 import { FriendsList } from '@/app/ui/friend/friendList';
 import { fetchFriendsFromServer } from '@/app/lib/friend.action';
-import { getSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 
 // Friends List Page Component
@@ -15,12 +15,12 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { data: session, status } = useSession();
+
 
   const loadFriends = async () => {
     try {
       setLoading(true);
-
-      const session = await getSession();
 
       // 세션이 없거나 accessToken이 없으면 로그인 페이지로 리다이렉트
       if(!session || !session.accessToken) {
