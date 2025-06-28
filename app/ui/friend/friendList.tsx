@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Friend } from '@/app/types/friend';
+import { Friend } from '@/app/types/friend.type';
 import { FriendItem } from '@/app/ui/friend/friendItem';
 
 interface FriendsListProps {

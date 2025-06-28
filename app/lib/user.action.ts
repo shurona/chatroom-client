@@ -1,7 +1,7 @@
 'use server';
 
 import { getTokenUser } from "./jwt.utils";
-import { UserResponseDto } from "@/app/types/user";
+import { UserResponseDto } from "@/app/types/user.type";
 
 /**
  * 사용자 ID로 사용자 정보를 찾습니다.

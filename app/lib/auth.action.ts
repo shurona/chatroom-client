@@ -1,6 +1,6 @@
 'use server';
 
-import { SignUpResponse } from '@/app/types/auth';
+import { SignUpResponse } from '@/app/types/auth.type';
 import { getTokenUser } from './jwt.utils';
 
 export async function signUp(formData: FormData) {

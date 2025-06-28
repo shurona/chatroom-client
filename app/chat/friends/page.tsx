@@ -1,7 +1,7 @@
 'use client'; // This directive marks the component as a Client Component in Next.js App Router
 
 import React, { useEffect, useState } from 'react';
-import { Friend } from '@/app/types/friend';
+import { Friend } from '@/app/types/friend.type';
 import { useRouter } from 'next/navigation';
 import { FriendsList } from '@/app/ui/friend/friendList';
 import { fetchFriendsFromServer } from '@/app/lib/friend.action';
@@ -43,7 +43,6 @@ export default function Page() {
   };
 
   useEffect(() => {
-  // c onsole.log('친구 페이지 마운트됨, 친구 목록 로드 시작');
     loadFriends();
   }, []);
 
