@@ -13,7 +13,7 @@ const SideNav = () => {
   const [activeSection, setActiveSection] = useState('chats'); // Default active section
 
   const { data: session } = useSession();
-  const [loginId, setLoginId] = useState(null);
+  const [nickName, setNickName] = useState<string>('게스트');
 
   // For demonstration, using alert. In a real app, you'd use router.push()
   const handleNavigation = (section: any) => {
@@ -26,7 +26,7 @@ const SideNav = () => {
   useEffect(() => {
     findUserById(session?.accessToken).then((user) => {
       if (user.success) {
-        setLoginId(user.data.loginId);
+        setNickName(user.data?.nickName || '게스트');
       }
     });
   }, []);
@@ -90,7 +90,7 @@ const SideNav = () => {
 
       {/* User Info / Logout Button at the bottom of the sidebar */}
       <div className="mt-auto pt-6 border-t border-indigo-700 text-center">
-        <p className="text-sm text-indigo-200">사용자: {loginId || '게스트'}</p>
+        <p className="text-sm text-indigo-200">사용자: {nickName || '게스트'}</p>
           <LogoutButton />
       </div>
     </nav>

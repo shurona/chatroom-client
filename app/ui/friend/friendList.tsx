@@ -8,7 +8,7 @@ interface FriendsListProps {
   friends: Friend[];
   onFriendClick?: (friend: Friend) => void;
   loading?: boolean;
-  error?: string;
+  error?: string | null;
 }
 
 export function FriendsList({ friends, onFriendClick, loading, error }: FriendsListProps) {
@@ -54,7 +54,7 @@ export function FriendsList({ friends, onFriendClick, loading, error }: FriendsL
   // 온라인/오프라인으로 정렬
   const sortedFriends = friends.sort((a, b) => {
     if (a.isOnline === b.isOnline) {
-      return a.name.localeCompare(b.name);
+      return a.nickName.localeCompare(b.nickName);
     }
     return a.isOnline ? -1 : 1;
   });
@@ -75,7 +75,7 @@ export function FriendsList({ friends, onFriendClick, loading, error }: FriendsL
           <div className="space-y-2">
             {onlineFriends.map((friend) => (
               <FriendItem 
-                key={friend.id} 
+                key={String(friend.id)} 
                 friend={friend} 
                 onClick={onFriendClick}
               />
@@ -94,7 +94,7 @@ export function FriendsList({ friends, onFriendClick, loading, error }: FriendsL
           <div className="space-y-2">
             {offlineFriends.map((friend) => (
               <FriendItem 
-                key={friend.id} 
+                key={String(friend.id)} 
                 friend={friend} 
                 onClick={onFriendClick}
               />

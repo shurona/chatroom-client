@@ -43,14 +43,14 @@ export function FriendItem({ friend, onClick }: FriendItemProps) {
     >
       {/* 아바타 */}
       <div className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold mr-4 ${getAvatarColor(friend.isOnline)}`}>
-        {getInitials(friend.loginId)}
+        {getInitials(friend.nickName)}
       </div>
 
       {/* 친구 정보 */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <p className="text-lg font-semibold text-gray-800 truncate">
-            {friend.loginId}
+            {friend.nickName}
           </p>
           {/* 온라인 상태 인디케이터 */}
           <div className={`w-2 h-2 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
