@@ -1,8 +1,17 @@
 export interface Friend {
-  id: string;
-  loginId: string;
+  id: Number;
+  nickName: string;
   description: string;
   createdAt: string;
+  isOnline: boolean;
+}
+
+export interface FriendRequestDto {
+  friendId: Number;
+  requestedUserId: Number;
+  nickName: string;
+  description: string;
+  requestAt: string;
   isOnline: boolean;
 }
 
