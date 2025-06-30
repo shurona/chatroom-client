@@ -41,7 +41,7 @@ export default function Page() {
       }
 
       const response = await fetchFriendsFromServer(session.accessToken);
-      setFriends(response);
+      setFriends(response.data || []);
 
       setError(null);
       setLoading(false);
@@ -60,7 +60,7 @@ export default function Page() {
       setError(null);
       
       const requests = await fetchFriendRequestsFromServer(session.accessToken);
-      setFriendRequests(requests);
+      setFriendRequests(requests.data || []);
     } catch (err) {
       setError('친구 요청을 불러오는데 실패했습니다.');
       console.error('친구 요청 로드 오류:', err);
