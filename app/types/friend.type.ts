@@ -1,5 +1,6 @@
 export interface Friend {
-  id: Number;
+  id: number;
+  friendUserid: number;
   nickName: string;
   description: string;
   createdAt: string;
@@ -7,8 +8,8 @@ export interface Friend {
 }
 
 export interface FriendRequestDto {
-  friendId: Number;
-  requestedUserId: Number;
+  friendId: number;
+  requestedUserId: number;
   nickName: string;
   description: string;
   requestAt: string;

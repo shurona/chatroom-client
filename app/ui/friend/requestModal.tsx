@@ -7,8 +7,8 @@ interface FriendRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   friendRequests: FriendRequestDto[];
-  onAcceptRequest: (id: Number) => void;
-  onDeclineRequest: (id: Number) => void;
+  onAcceptRequest: (id: number) => void;
+  onDeclineRequest: (id: number) => void;
   loading?: boolean;
 }
 
@@ -30,7 +30,7 @@ export function FriendRequestModal({
     >
       <div 
         className="bg-white rounded-xl shadow-2xl w-full max-w-lg relative max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} // 클릭 이벤트 전파 방지
       >
         {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
@@ -95,8 +95,8 @@ export function FriendRequestModal({
 // 개별 친구 요청 아이템 컴포넌트
 interface FriendRequestItemProps {
   request: FriendRequestDto;
-  onAccept: (id: Number) => void;
-  onDecline: (id: Number) => void;
+  onAccept: (id: number) => void;
+  onDecline: (id: number) => void;
 }
 
 function FriendRequestItem({ request, onAccept, onDecline }: FriendRequestItemProps) {
