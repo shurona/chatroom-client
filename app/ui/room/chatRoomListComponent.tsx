@@ -113,7 +113,7 @@ function ChatRoomItem({ chatRoom, onClick }: ChatRoomItemProps) {
             <p className={`text-md font-semibold truncate ${
               hasUnreadMessages ? 'text-gray-900' : 'text-gray-800'
             }`}>
-              {chatRoom.name || '이름 없는 채팅방'}
+              {chatRoom.name || '개인 톡'}
             </p>
             {/* 채팅방 타입 표시 */}
             <span className={`ml-2 px-2 py-0.5 text-xs rounded-full font-medium ${
