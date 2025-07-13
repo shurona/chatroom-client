@@ -42,7 +42,7 @@ export async function fetchFriendRequestsFromServer(token: string)
 /**
  * 친구 요청을 수락하는 함수
  */
-export async function acceptFriendRequest(id: Number, token: string): Promise<void> {
+export async function acceptFriendRequest(id: number, token: string): Promise<void> {
   if (!token) {
     null;
   }
@@ -53,7 +53,7 @@ export async function acceptFriendRequest(id: Number, token: string): Promise<vo
 /**
  * 친구 요청을 거절하는 함수
  */
-export async function refuseFriendRequest(id: Number, token: string): Promise<void> {
+export async function refuseFriendRequest(id: number, token: string): Promise<void> {
   if (!token) {
     null;
   }

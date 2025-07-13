@@ -115,7 +115,7 @@ const handleSearchFriend = async (searchId: string): Promise<UserSearchResult[]>
   };
 
   // 친구 요청 수락
-  const handleAcceptRequest = (id: Number) => {
+  const handleAcceptRequest = (id: number) => {
     try {
       if (!session?.accessToken) {
         return { success: false, error: '인증이 필요합니다.' };
@@ -134,7 +134,7 @@ const handleSearchFriend = async (searchId: string): Promise<UserSearchResult[]>
   };
 
   // 친구 요청 거절
-  const handleDeclineRequest = (id: Number) => {
+  const handleDeclineRequest = (id: number) => {
     alert(`친구 요청 ${id}번을 거절했습니다.`);
     if (!session?.accessToken) {
       return { success: false, error: '인증이 필요합니다.' };

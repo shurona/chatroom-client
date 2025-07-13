@@ -140,7 +140,7 @@ export function AddFriendModal({
                   className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-800 transition-colors"
                   placeholder="친구 아이디를 입력하세요 (최소 3글자)"
                   onChange={(e) => setFriendSearchId(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                   disabled={searchLoading}
                   autoComplete="off"
                   maxLength={20}
