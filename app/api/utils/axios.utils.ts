@@ -52,7 +52,7 @@ export class AxiosApiClient {
     };
   }
 
-  async get<T>(endpoint: string, accessToken?: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string, accessToken?: string, config?: AxiosRequestConfig): Promise<ApiResponseType<T>> {
     try {
       const response: AxiosResponse<ApiResponseType<T>> = await axios.get(
         `${this.baseURL}${endpoint}`,
@@ -121,7 +121,7 @@ export class AxiosApiClient {
     }
   }
 
-  async delete<T>(endpoint: string, accessToken?: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async delete<T>(endpoint: string, accessToken?: string, config?: AxiosRequestConfig): Promise<ApiResponseType<T>> {
     try {
       const response: AxiosResponse<ApiResponseType<T>> = await axios.delete(
         `${this.baseURL}${endpoint}`,
