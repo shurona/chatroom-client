@@ -8,9 +8,6 @@ import { ChatRoomResponseDto } from '@/app/types/chat.type'; // Import the ChatR
 import { ChatRoomList } from '@/app/ui/room/chatRoomListComponent'; // Import the ChatRoomList component
 import { ChatRoomDetail } from '@/app/ui/room/chatRoomDetail'; // Import the ChatRoomDetail component
 import { NewChatModal } from '@/app/ui/room/newPersonalChatModal'; // Import the NewChatModal component
-import { useRouter } from 'next/navigation';
-
-
 
 // Chat List Page Component
 const App = () => {
@@ -29,7 +26,6 @@ const App = () => {
 
   const [chatRooms, setChatRooms] = useState<ChatRoomResponseDto[]>([]); // State to hold chat rooms
   const { data: session, status } = useSession();
-  const router = useRouter();
 
 
   // Handler for creating a new chat (for demonstration)
@@ -89,11 +85,16 @@ const App = () => {
     window.history.pushState({ chatRoomId: chatRoom.id }, '', ''); // 히스토리 추가
   };
 
+  // 채팅방 상세 보기를 닫는 함수
+  const handleCloseChatRoom = () => {
+    setSelectedChatRoom(null);
+    window.history.pushState(null, '', ''); // 히스토리 상태 초기화
+  };
+
+  // 
   useEffect(() => {
     fetchChatRooms();
-  }, []);
 
-  useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       // 브라우저의 뒤로 가기 버튼을 눌렀을 때 실행
       if (!event.state || !event.state.chatRoomId) {
@@ -102,7 +103,6 @@ const App = () => {
     };
 
     window.addEventListener('popstate', handlePopState);
-
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
@@ -115,7 +115,7 @@ const App = () => {
         // 채팅방 상세 보기
         <ChatRoomDetail
           selectedChatRoom={selectedChatRoom}
-          onClose={() => setSelectedChatRoom(null)} // Close detail view
+          onClose={handleCloseChatRoom} // Close detail view
         />
       ) : (
         <>
@@ -185,7 +185,7 @@ const App = () => {
                   placeholder="채팅방 이름 또는 참가자 검색"
                   value={chatSearchQuery}
                   onChange={(e) => setChatSearchQuery(e.target.value)}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSearchChatRooms();
                     }
