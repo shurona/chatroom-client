@@ -1,14 +1,10 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-
-interface Message {
-  id: number;
-  sender: string;
-  text: string;
-  type: 'sent' | 'received';
-  time: string;
-}
+import { fetchChatLogsFromServer, sendMessageToServer } from '@/app/lib/chat.action';
+import { ChatContentType, ChatLogResponseDto } from '@/app/types/chat.type';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { getTokenUser } from '@/app/lib/jwt.utils';
 
 interface ChatRoomDetailProps {
   selectedChatRoom: { id: number; name: string } | null;
@@ -16,36 +12,72 @@ interface ChatRoomDetailProps {
 }
 
 export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, sender: 'You', text: '안녕하세요! 채팅방에 오신 것을 환영합니다.', type: 'sent', time: '10:00 AM' },
-    { id: 2, sender: 'Partner', text: '안녕하세요! 반갑습니다.', type: 'received', time: '10:01 AM' },
-  ]);
+  const [messages, setMessages] = useState<ChatLogResponseDto[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [userId, setUserId] = useState<number | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null); // 메시지 스크롤을 위한 참조
+  const { data: session, status } = useSession();
 
   const handleSendMessage = () => {
     if (newMessage.trim() === '') return;
+    
+    console.log('메시지를 전송합니다: ' + newMessage); // 메시지 전송 로직을 여기에 추가해야 합니다.
 
-    const newMsg: Message = {
-      id: messages.length + 1,
-      sender: 'You',
-      text: newMessage,
-      type: 'sent',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+    if(selectedChatRoom === null || session == null) {
+      console.error('채팅방이나 사용자 ID가 설정되지 않았습니다.');
+      return;
+    }
 
-    setMessages((prev) => [...prev, newMsg]);
+    // 메시지를 저장한다.
+    sendMessageToServer(session.accessToken || '', selectedChatRoom?.id, newMessage);
     setNewMessage('');
+
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const fetchChatLogs = async (chatRoomId: number) => {
+
+    const response = await fetchChatLogsFromServer(session?.accessToken || '', chatRoomId);
+    try {
+      if (response.success) {
+        setMessages(response.data?.content || []);
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        console.error('Failed to fetch chat logs:', response.error);
+      }
+    } catch (error) {
+      console.error('Error fetching chat logs:', error);
+    }
+  };
+
   const handleChatInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return; // IME 입력 중에는 처리하지 않음
+
     if (e.key === 'Enter') {
+      e.preventDefault(); // 기본 Enter 키 동작 방지
+      e.stopPropagation(); // 이벤트 전파 방지
       handleSendMessage();
     }
   };
 
+  // If no chat room is selected, return null to avoid rendering
   if (!selectedChatRoom) return null;
+
+  // Fetch chat logs when the selected chat room changes
+  useEffect(() => {
+    if (selectedChatRoom) {      
+      fetchChatLogs(selectedChatRoom.id);
+    }
+  }, [selectedChatRoom]);
+
+  // session 정보가 변경될 때마다 userId를 업데이트
+  useEffect(() => {
+    if (session?.accessToken) {
+      const userId = getTokenUser(session.accessToken); // 토큰에서 userId 추출
+      setUserId(userId ? parseInt(userId, 10) : null); // Set the userId from the token
+    }
+  }, [session]);
+
 
   return (
     <div className="flex flex-col h-full">
@@ -68,29 +100,30 @@ export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailPro
       </div>
 
       {/* Message List Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 rounded-lg">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 rounded-lg min-h-[400px]">
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex ${msg.type === 'sent' ? 'justify-end' : 'justify-start'}`}
+            // 나의 userId와 msg.writerId를 비교하여 메시지 정렬
+            className={`flex ${msg.writerId === userId ? 'justify-end' : 'justify-start'}`}
           >
             <div
               className={`flex flex-col max-w-[80%] p-3 rounded-lg shadow-sm ${
-                msg.type === 'sent'
+                msg.writerId === userId
                   ? 'bg-blue-500 text-white rounded-br-none'
                   : 'bg-gray-200 text-gray-800 rounded-bl-none'
               }`}
             >
-              {msg.type === 'received' && (
-                <span className="text-xs font-semibold text-gray-600 mb-1">{msg.sender}</span>
+              {msg.writerId === userId && (
+                <span className="text-xs font-semibold text-gray-600 mb-1">{msg.writeUserNickName}</span>
               )}
-              <p className="text-sm break-words">{msg.text}</p>
+              <p className="text-sm break-words">{msg.content}</p>
               <span
                 className={`mt-1 text-[0.65rem] ${
-                  msg.type === 'sent' ? 'text-blue-100' : 'text-gray-500'
+                  msg.writerId === userId ? 'text-blue-100' : 'text-gray-500'
                 } self-end`}
               >
-                {msg.time}
+                {msg.wroteTime}
               </span>
             </div>
           </div>
@@ -103,10 +136,10 @@ export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailPro
         <input
           type="text"
           placeholder="메시지를 입력하세요..."
-          className="flex-1 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+          className="flex-1 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 text-sm"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={handleChatInputKeyPress}
+          onKeyDown={handleChatInputKeyPress}
         />
         <button
           onClick={handleSendMessage}
