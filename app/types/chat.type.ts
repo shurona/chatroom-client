@@ -35,6 +35,10 @@ export interface ChatLogResponseDto {
   unreadCount: number;
 }
 
+export interface ChatReadResponseDto {
+  readStatusMap: Record<number, number>; // 메시지 ID와 읽음 상태 매핑
+}
+
 export enum ChatRoomType {
   GROUP = "GROUP",
   PRIVATE = "PRIVATE"
