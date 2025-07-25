@@ -43,7 +43,7 @@ const LoginPage = () => {
 
       const {accessToken, refreshToken} = result.data;
 
-      // 로그인 성공 시 토큰 저장 (예: 로컬 스토리지)
+      // 로그인 성공 시 토큰 저장
       const signinResult = await signIn('credentials', {
         redirect: false,
         accessToken,
@@ -62,6 +62,7 @@ const LoginPage = () => {
       router.push(callbackUrl);
     } catch (err) {
       setError('로그인 처리 중 오류가 발생했습니다.');
+      console.error('Login error:', err);
       setIsSubmitting(false);
     }
   }
