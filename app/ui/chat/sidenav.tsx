@@ -5,6 +5,7 @@ import {LogoutButton} from '@/app/ui/logoutButton'; // Importing the LogOutButto
 import { useSession } from 'next-auth/react';
 import { findUserById } from '@/app/lib/user.action';
 import { useRouter } from 'next/navigation';
+import { useSocket } from '@/app/lib/hooks/useChatSocket';
 
 // 네비게이션 링크 타입 정의
 interface NavLink {
@@ -14,6 +15,7 @@ interface NavLink {
 }
 
 const SideNav = () => {
+  const { isConnected } = useSocket();
   const router = useRouter();
 
   // 링크 배열 정의 (아이콘 포함)
@@ -106,6 +108,14 @@ const SideNav = () => {
 
       {/* User Info / Logout Button at the bottom of the sidebar */}
       <div className="mt-auto pt-6 border-t border-indigo-700 text-center">
+         {/* 소켓 연결 상태 표시 */}
+        <div className="mb-4">
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+            isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {isConnected ? '🟢 온라인' : '🔴 오프라인'}
+          </span>
+        </div>
         <p className="text-sm text-indigo-200">사용자: {nickName || '게스트'}</p>
           <LogoutButton />
       </div>
