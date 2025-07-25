@@ -34,8 +34,12 @@ export interface ChatLogResponseDto {
   wroteTime: string; // 날짜가 넘어온다.
   unreadCount: number;
 }
+export interface ReadNotificationDto {
+  userId: number; // 읽음 상태를 업데이트한 사용자 ID
+  readAt: string; // 읽음 시간
+}
 
-export interface ChatReadResponseDto {
+export interface ChatUnReadUserResponseDto {
   readStatusMap: Record<number, number>; // 메시지 ID와 읽음 상태 매핑
 }
 
