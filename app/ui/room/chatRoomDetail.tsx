@@ -1,10 +1,12 @@
 'use client';
 
 import { fetchChatLogsFromServer, sendMessageToServer } from '@/app/lib/chat.action';
-import { ChatContentType, ChatLogResponseDto } from '@/app/types/chat.type';
+import { ChatUnReadUserResponseDto, ChatLogResponseDto, ReadNotificationDto } from '@/app/types/chat.type';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSocket } from '@/app/lib/hooks/useChatSocket';
 import { getTokenUser } from '@/app/lib/jwt.utils';
+import { send } from 'process';
 
 interface ChatRoomDetailProps {
   selectedChatRoom: { id: number; name: string } | null;
@@ -14,9 +16,78 @@ interface ChatRoomDetailProps {
 export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailProps) => {
   const [messages, setMessages] = useState<ChatLogResponseDto[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const messagesRef = useRef<ChatLogResponseDto[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
+  const { data: session } = useSession();
   const messagesEndRef = useRef<HTMLDivElement>(null); // 메시지 스크롤을 위한 참조
-  const { data: session, status } = useSession();
+  const { sendMessage, subscribe, unsubscribe, isConnected } = useSocket();
+
+  // If no chat room is selected, return null to avoid rendering
+  if (!selectedChatRoom) return null;
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // 메시지 전송 함수
+  useEffect(() => {
+    if(selectedChatRoom && isConnected && userId !== null) {
+      const room = selectedChatRoom.id;
+      const replyDest = `/topic/room/${room}/read/user/${userId}`;
+      // 채팅방이 선택되었고 소켓이 연결된 경우, 해당 채팅방의 메시지를 구독
+      subscribe(`/topic/room/${room}`, (message: ChatLogResponseDto) => {
+        // 신규 메시지가 있을 때만 update
+        const prev = messagesRef.current;                     // 최신 상태 참조
+        const updated = [...prev, message];                   // 메시지 추가
+        messagesRef.current = updated;                        // ref에도 저장
+        setMessages(updated);                                 // 상태 업데이트 및 렌더링
+
+        const messageIds = updated
+          .map(msg => msg.id)
+          .filter(id => id !== undefined);
+
+        // 메시지 ID가 있는 경우에만 읽음 상태를 전송
+        if (messageIds.length > 0) {
+          console.log('sendMessage 호출됨:', messageIds);
+          sendMessage(`/app/room/${room}/read`, { messageIds }, replyDest);
+        }
+        // 메시지 스크롤을 가장 아래로 이동
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      });
+
+      // 다른 사람이 읽음 상태를 업데이트하기 위한 구독
+      subscribe(`/topic/room/${room}/read-notifications`, (notification: ReadNotificationDto) => {
+        const messageIds =  messagesRef.current.map(msg => msg.id);
+        if(messageIds.length === 0) return; 
+
+        sendMessage(`/app/room/${room}/read`, { messageIds }, replyDest);
+        console.log('읽음 상태 업데이트:', notification);
+      })
+
+      // 채팅 별 안 읽은 유저 수 업데이트를 위한 구독
+      subscribe(replyDest, (message: ChatUnReadUserResponseDto) => {
+        console.log('읽음 응답 도착:', message);
+        
+        const logIdWithUnread = message.readStatusMap;
+
+        // messages 상태 업데이트
+        setMessages((prevMessages) => {
+          return prevMessages.map(msg => {
+            msg.unreadCount = logIdWithUnread[msg.id]; // 읽음 상태 업데이트
+            return msg;
+          });
+        });
+      });
+
+      // 컴포넌트 언마운트 시 구독 해제
+      return () => {
+        unsubscribe(`/topic/room/${room}`); // 채팅방 메시지 구독 해제
+        unsubscribe(`/topic/room/${room}/read-notifications`); // 읽음 상태 구독 해제
+        unsubscribe(replyDest); // 안 읽은 유저 수 구독 해제
+      };
+    } 
+  }, [selectedChatRoom, isConnected, userId]);
+
 
   const handleSendMessage = () => {
     if (newMessage.trim() === '') return;
@@ -36,7 +107,6 @@ export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailPro
   };
 
   const fetchChatLogs = async (chatRoomId: number) => {
-
     const response = await fetchChatLogsFromServer(session?.accessToken || '', chatRoomId);
     try {
       if (response.success) {
@@ -60,9 +130,6 @@ export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailPro
     }
   };
 
-  // If no chat room is selected, return null to avoid rendering
-  if (!selectedChatRoom) return null;
-
   // Fetch chat logs when the selected chat room changes
   useEffect(() => {
     if (selectedChatRoom) {      
@@ -77,7 +144,6 @@ export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailPro
       setUserId(userId ? parseInt(userId, 10) : null); // Set the userId from the token
     }
   }, [session]);
-
 
   return (
     <div className="flex flex-col h-full">
@@ -101,30 +167,41 @@ export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailPro
 
       {/* Message List Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 rounded-lg min-h-[400px]">
-        {messages.map((msg) => (
+        {messages.map((msg, index) => (
           <div
-            key={msg.id}
-            // 나의 userId와 msg.writerId를 비교하여 메시지 정렬
+            key={msg.id || index}
             className={`flex ${msg.writerId === userId ? 'justify-end' : 'justify-start'}`}
           >
-            <div
-              className={`flex flex-col max-w-[80%] p-3 rounded-lg shadow-sm ${
-                msg.writerId === userId
-                  ? 'bg-blue-500 text-white rounded-br-none'
-                  : 'bg-gray-200 text-gray-800 rounded-bl-none'
-              }`}
-            >
-              {msg.writerId === userId && (
-                <span className="text-xs font-semibold text-gray-600 mb-1">{msg.writeUserNickName}</span>
-              )}
-              <p className="text-sm break-words">{msg.content}</p>
-              <span
-                className={`mt-1 text-[0.65rem] ${
-                  msg.writerId === userId ? 'text-blue-100' : 'text-gray-500'
-                } self-end`}
+            <div className="flex flex-col items-end"> {/* 메시지와 읽음 상태를 함께 묶기 */}
+              <div
+                className={`flex flex-col max-w-[80%] p-3 rounded-lg shadow-sm ${
+                  msg.writerId === userId
+                    ? 'bg-blue-500 text-white rounded-br-none'
+                    : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                }`}
               >
-                {msg.wroteTime}
-              </span>
+                {msg.writerId !== userId && (
+                  <span className="text-xs font-semibold text-gray-600 mb-1">{msg.writeUserNickName}</span>
+                )}
+                <p className="text-sm break-words">{msg.content}</p>
+                
+                {/* 시간과 읽음 상태 */}
+                <div className="flex items-center justify-between mt-1">
+                  <span
+                    className={`text-[0.65rem] ${
+                      msg.writerId === userId ? 'text-blue-100' : 'text-gray-500'
+                    }`}
+                  >
+                    {msg.wroteTime}
+                  </span>
+                  {/* 내가 보낸 메시지에만 읽지 않은 사용자 수 표시 */}
+                  {msg.writerId === userId && msg.unreadCount !== undefined && msg.unreadCount > 0 && (
+                    <span className="text-[0.6rem] text-blue-100 ml-2">
+                      {msg.unreadCount}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         ))}
