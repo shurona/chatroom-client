@@ -22,9 +22,9 @@ const LoginPage = () => {
         router.push(callbackUrl);
       }
     };
-    
+
     checkSession();
-  }, [callbackUrl, router]);
+  }, [callbackUrl, session]);
 
   
   // 서버 액션 결과 처리를 위한 클라이언트 래퍼 함수
