@@ -6,7 +6,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSocket } from '@/app/lib/hooks/useChatSocket';
 import { getTokenUser } from '@/app/lib/jwt.utils';
-import { send } from 'process';
 
 interface ChatRoomDetailProps {
   selectedChatRoom: { id: number; name: string } | null;
@@ -55,7 +54,7 @@ export const ChatRoomDetail = ({ selectedChatRoom, onClose } : ChatRoomDetailPro
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       });
 
-      // 다른 사람이 읽음 상태를 업데이트하기 위한 구독
+      // 다른 사람이 채팅 내용을 읽었을 때 안 읽은 유저의 숫자를 업데이트 위한 구독
       subscribe(`/topic/room/${room}/read-notifications`, (notification: ReadNotificationDto) => {
         const messageIds =  messagesRef.current.map(msg => msg.id);
         if(messageIds.length === 0) return; 
